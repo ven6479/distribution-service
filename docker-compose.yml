@@ -1,0 +1,51 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: bash -c "python manage.py migrate --noinput && python manage.py runserver 127.0.0.1:8000"
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine
+    ports:
+        - 6379:6379
+  celery:
+    build: .
+    restart: always
+    command:  celery -A distribution worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - app
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379
+      CELERY_RESULT_BACKEND: redis://redis:6379
+  celery-beat:
+    build: .
+    restart: always
+    command: celery -A distribution beat -l info
+    volumes:
+      - .:/app
+  flower:
+    image: flower
+    build: .
+    command: celery -A distribution flower
+    ports:
+      - 5555:5555
+    volumes:
+      - .:/app
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379
+      CELERY_RESULT_BACKEND: redis://redis:6379
+
+
+    depends_on:
+      - redis
+      - app
+      - celery
