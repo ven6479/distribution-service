@@ -59,7 +59,7 @@ def send_beat_email():
                 send_mail(
                         f'Hey {contact.name} It is daily stats',
                         f'Stats for today: {total}',
-                        f'mr.nekita798@gmail.com', #need to add your email for sending emails to others
+                        f'test123@gmail.com', #need to add your email for sending emails to others
                         [contact.email],
                         fail_silently=False
                 )
